@@ -1,0 +1,27 @@
+https://codeboten.medium.com/bpf-experiments-on-macos-9ad0cf21ea83
+sudo apt install -y --install-recommends build-essential git make libelf-dev clang strace tar bpfcc-tools linux-headers-$(uname -r) gcc-multilib
+
+
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4052245BD4284CDD
+echo "deb https://repo.iovisor.org/apt/$(lsb_release -cs) $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/iovisor.list
+sudo apt-get update
+sudo apt-get install bcc-tools libbcc-examples linux-headers-$(uname -r)
+
+sudo apt update
+sudo apt install libbpf-dev
+
+
+
+sudo apt-get install -y bpftrace
+
+sudo bpftrace -e 'tracepoint:raw_syscalls:sys_enter $(lsb_release -cs){ @[comm] = count();}'
+
+sudo strace -e bpf bpftrace -e 'tracepoint:raw_syscalls:sys_enter { @[comm] = count();}'
+
+sudo strace -e bpf,perf_event_open,ioctl bpftrace -e 'tracepoint:raw_syscalls:sys_enter { @[comm] = count();}'
+
+
+readelf -a hello.bpf.o
+
+
+go:generate go run github.com/cilium/ebpf/cmd/bpf2go bpf test.c -- -I./headers
